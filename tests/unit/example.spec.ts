@@ -4,8 +4,11 @@ import 데이터접근 from "@/components/데이터_접근.vue";
 import DOM접근 from "@/components/Dom_접근.vue";
 import 클릭시값증가 from "@/components/클릭시값증가.vue";
 import axios컴포넌트 from "@/components/axios.vue";
+import vuex컴포넌트 from "@/components/vuex.vue";
 import { nextTick } from "vue";
 import axios from "axios";
+import { key, store, State, useStore } from "@/store/index";
+import { Store } from "vuex";
 
 // 모듈 목킹
 jest.mock("axios", () => ({
@@ -142,8 +145,8 @@ describe("spy 동작 감시", () => {
   });
 });
 
-describe("비동기 동작", () => {
-  it("DOM 업데이트 반영 값 체크", async () => {
+describe("DOM 비동기 동작", () => {
+  it("DOM 업데이트 반영 될떄 기다리기", async () => {
     const wrapper = shallowMount(클릭시값증가);
 
     expect(wrapper.find("h1").text()).toBe("0");
@@ -155,11 +158,36 @@ describe("비동기 동작", () => {
     expect(wrapper.find("h1").text()).toBe("1");
   });
 
-  it("async데이터 받아올때끼지 기달리기", async () => {
+  it("async데이터 받아올때 DOM 업데이트 반영 될때까지 기달리기", async () => {
     const wrapper = shallowMount(axios컴포넌트);
 
+    // DOM이 업데이트 될때까지 기달림
     await flushPromises();
-
-    console.log(wrapper.vm.data);
+    expect(wrapper.find(".DomData").text()).toBe("데이터 목킹헀어 안심해");
   });
 });
+
+// vuex는 나중에 더해봐야할듯
+describe("Vuex", () => {
+  it("vuex 테스트", async () => {
+    const wrapper = shallowMount(vuex컴포넌트, {
+      global: {
+        plugins: [[store, key]],
+      },
+    });
+    const dataStore: Store<State> = wrapper.vm.store;
+
+    expect(wrapper.find(".count").text()).toBe("0");
+    dataStore.commit("addCount");
+    await dataStore.dispatch("asyncData");
+
+    await nextTick(); // import { nextTick } from "vue";
+    expect(wrapper.find(".count").text()).toBe("1");
+    expect(wrapper.find(".asyncData").text()) //
+      .toBe("데이터 목킹헀어 안심해");
+  });
+});
+
+// vue 테스트 : https://vue-test-utils.vuejs.org/api/wrapper/#contains
+// vue3 용 테스트 : https://next.vue-test-utils.vuejs.org/guide/extending-vtu/plugins.html#using-a-plugin
+// jest : https://jestjs.io/docs/mock-function-api#mockfnmockresolvedvaluevalue

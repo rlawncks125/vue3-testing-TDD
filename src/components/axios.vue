@@ -1,5 +1,5 @@
 <template>
-  {{ data }}
+  <p class="DomData">{{ data }}</p>
 </template>
 
 <script lang="ts">
