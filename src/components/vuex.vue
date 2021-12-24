@@ -14,7 +14,7 @@ export default defineComponent({
       count: computed(() => store.state.count),
       title: computed(() => store.state.title),
     });
-    return { store, ...toRefs(data) };
+    return { ...toRefs(data) };
   },
 });
 </script>
