@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1640334025192" clover="3.2.0">
-  <project timestamp="1640334025192" name="All files">
+<coverage generated="1640483886980" clover="3.2.0">
+  <project timestamp="1640483886980" name="All files">
     <metrics statements="43" coveredstatements="43" conditionals="0" coveredconditionals="0" methods="13" coveredmethods="13" elements="56" coveredelements="56" complexity="0" loc="43" ncloc="43" packages="1" files="7" classes="7"/>
     <file name="Dom_접근.vue" path="/home/wncks125/공부파일/vue-testing-tdd/src/components/Dom_접근.vue">
       <metrics statements="5" coveredstatements="5" conditionals="0" coveredconditionals="0" methods="2" coveredmethods="2"/>

@@ -273,3 +273,45 @@ describe("vueRotuer", () => {
 // vue 테스트 : https://vue-test-utils.vuejs.org/api/wrapper/#contains
 // vue3 용 테스트 : https://next.vue-test-utils.vuejs.org/guide/advanced/vue-router.html#using-a-mocked-router
 // jest : https://jestjs.io/docs/mock-function-api#mockfnmockresolvedvaluevalue
+
+import MockClass from "@/../tests/unit/util/MockClass";
+import StubClass from "@/../tests/unit/util/StubClass";
+jest.mock("@/../tests/unit/util/MockClass");
+
+describe("mock stub 차이", () => {
+  beforeEach(() => {
+    // 생성자와 모든 메서드에 대한 모든 인스턴스와 호출을 지움
+    (MockClass as jest.Mock).mockClear();
+  });
+
+  it("mock 은 테스트할 부분적 데이터를 Mock하여 테스트", async () => {
+    const mockData = [
+      { item: "mock--zz", available: true },
+      { item: "mock--ss", available: false },
+    ];
+    // const fetchItems = jest.fn().mockResolvedValue(mockData);
+    // (MockClass as jest.Mock).mockImplementation(() => {
+    //   return {
+    //     fetchItems,
+    //   };
+    // });
+
+    (MockClass as jest.Mock).mockImplementation(() => ({
+      fetchItems: () => Promise.resolve(mockData),
+    }));
+
+    const items = new MockClass();
+
+    expect(await items.fetchItems()).toEqual(mockData);
+  });
+
+  it("stub 은 준비해놓은 구조&형식을 가진 데이터를 만들어서 테스트", async () => {
+    const mockData = [
+      { item: "stub-zz", available: true },
+      { item: "stub-ss", available: false },
+    ];
+    const items = new StubClass();
+
+    expect(await items.fetchItems()).toEqual(mockData);
+  });
+});
