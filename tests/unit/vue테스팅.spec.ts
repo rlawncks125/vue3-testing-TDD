@@ -1,9 +1,4 @@
-import {
-  flushPromises,
-  mount,
-  shallowMount,
-  VueWrapper,
-} from "@vue/test-utils";
+import { flushPromises, mount, shallowMount } from "@vue/test-utils";
 import 데이터접근 from "@/components/데이터_접근.vue";
 import DOM접근 from "@/components/Dom_접근.vue";
 import 클릭시값증가 from "@/components/클릭시값증가.vue";
@@ -11,12 +6,14 @@ import axios컴포넌트 from "@/components/axios.vue";
 import vuex컴포넌트 from "@/components/vuex.vue";
 import { nextTick } from "vue";
 import axios from "axios";
-import { key, store, State, useStore } from "@/store/index";
+import { key, store, State } from "@/store/index";
 import { Store } from "vuex";
 import AppCom from "@/App.vue";
 import vue라우터 from "@/components/vue라우터.vue";
 import Slots컴포 from "@/components/Slots.vue";
 import Stub컴포 from "@/components/stub컴포넌트.vue";
+import emit컴포 from "@/components/emit접근.vue";
+import 하위emit컴포 from "@/components/하위컴포넌트/하위emit.vue";
 import { createRouterMock, injectRouterMock, getRouter } from "vue-router-mock";
 import router, { routes as indexRoutes } from "@/router/index";
 
@@ -442,6 +439,27 @@ describe("하위 컴포넌트 접근", () => {
 
     const compoB = wrapper.getComponent({ name: "compoB" });
     expect(compoB.html()).toContain("compo-b-stub");
+  });
+});
+
+describe("emit", () => {
+  it("emit 있는 컴포넌트 테스트", () => {
+    const wrapper = mount(하위emit컴포);
+
+    wrapper.find("button").trigger("click");
+
+    expect(wrapper.emitted().childEvent[0]).toEqual([{ msg: "자식" }]);
+    expect(wrapper.emitted().childEvent[1]).toEqual([{ msg: "자식2" }]);
+  });
+
+  it("하위 컴포넌트 emit 테스트 ", () => {
+    const wrapper = mount(emit컴포);
+
+    const childCompo = wrapper.getComponent({ name: "childCompo" });
+    childCompo.find("button").trigger("click");
+
+    expect(childCompo.emitted().childEvent[0]).toEqual([{ msg: "자식" }]);
+    expect(childCompo.emitted().childEvent[1]).toEqual([{ msg: "자식2" }]);
   });
 });
 
