@@ -1,5 +1,4 @@
 import { flushPromises, mount, shallowMount } from "@vue/test-utils";
-import HelloWorld from "@/components/HelloWorld.vue";
 import 데이터접근 from "@/components/데이터_접근.vue";
 import DOM접근 from "@/components/Dom_접근.vue";
 import 클릭시값증가 from "@/components/클릭시값증가.vue";
@@ -11,9 +10,10 @@ import { key, store, State, useStore } from "@/store/index";
 import { Store } from "vuex";
 import AppCom from "@/App.vue";
 import vue라우터 from "@/components/vue라우터.vue";
+import Slots컴포 from "@/components/Slots.vue";
+import Stub컴포 from "@/components/stub컴포넌트.vue";
 import { createRouterMock, injectRouterMock, getRouter } from "vue-router-mock";
 import router, { routes as indexRoutes } from "@/router/index";
-import { createWebHistory } from "vue-router";
 
 // 모듈 목킹
 jest.mock("axios", () => ({
@@ -105,6 +105,13 @@ describe("DOM 접근", () => {
     await btnInput.trigger("click");
     expect(spy).toHaveBeenCalledTimes(3);
   });
+
+  it("ref 를 이용한 접근", () => {
+    const wrpper = shallowMount(DOM접근);
+    const testRef = wrpper.find({ ref: "testRef" });
+
+    expect(testRef.text()).toBe("ref 접근 방법입니다.");
+  });
 });
 
 describe("함수 Mocking", () => {
@@ -175,6 +182,22 @@ describe("DOM 비동기 동작", () => {
     // DOM이 업데이트 될때까지 기달림
     await flushPromises();
     expect(wrapper.find(".DomData").text()).toBe("데이터 목킹헀어 안심해");
+  });
+});
+
+describe("Slot ", () => {
+  it("", () => {
+    const wrapper = mount(Slots컴포, {
+      slots: {
+        header: "<div>Header</div>",
+        default: "<div>Main Content</div>",
+        footer: "<div>Footer</div>",
+      },
+    });
+
+    expect(wrapper.html()).toContain("<div>Header</div>");
+    expect(wrapper.html()).toContain("<div>Main Content</div>");
+    expect(wrapper.html()).toContain("<div>Footer</div>");
   });
 });
 
@@ -270,10 +293,6 @@ describe("vueRotuer", () => {
   });
 });
 
-// vue 테스트 : https://vue-test-utils.vuejs.org/api/wrapper/#contains
-// vue3 용 테스트 : https://next.vue-test-utils.vuejs.org/guide/advanced/vue-router.html#using-a-mocked-router
-// jest : https://jestjs.io/docs/mock-function-api#mockfnmockresolvedvaluevalue
-
 import MockClass from "@/../tests/unit/util/MockClass";
 import StubClass from "@/../tests/unit/util/StubClass";
 jest.mock("@/../tests/unit/util/MockClass");
@@ -305,7 +324,7 @@ describe("mock stub 차이", () => {
     expect(await items.fetchItems()).toEqual(mockData);
   });
 
-  it("stub 은 준비해놓은 구조&형식을 가진 데이터를 만들어서 테스트", async () => {
+  it("stub 은 구조&형식이 같은 데이터 더미를 만들어서 테스트", async () => {
     const mockData = [
       { item: "stub-zz", available: true },
       { item: "stub-ss", available: false },
@@ -315,3 +334,43 @@ describe("mock stub 차이", () => {
     expect(await items.fetchItems()).toEqual(mockData);
   });
 });
+
+describe("vue 컴포넌트 stubs", () => {
+  it("mount를 이용한 stub안한 컴포넌트 받아오기", () => {
+    const wrapper = mount(Stub컴포);
+
+    expect(wrapper.html()).toContain("<div>컴포A</div>");
+    expect(wrapper.html()).toContain("<div>컴포B</div>");
+    expect(wrapper.html()).toContain("<div>컴포C</div>");
+  });
+
+  it("shallow Mount를 이용한 모든 하위컴포넌트 stub", () => {
+    const wrapper = shallowMount(Stub컴포);
+
+    expect(wrapper.html()).toContain("<compo-a-stub></compo-a-stub>");
+    expect(wrapper.html()).toContain("<compo-b-stub></compo-b-stub>");
+    expect(wrapper.html()).toContain("<compo-c-stub></compo-c-stub>");
+  });
+
+  it("옵션을 이용한 stub 커스텀", () => {
+    const wrapper = shallowMount(Stub컴포, {
+      global: {
+        stubs: {
+          compoA: true,
+          compoB: false,
+          compoC: {
+            template: `<span>스텁 했어</span>`,
+          },
+        },
+      },
+    });
+
+    expect(wrapper.html()).toContain("<compo-a-stub></compo-a-stub>");
+    expect(wrapper.html()).toContain("<div>컴포B</div>");
+    expect(wrapper.html()).toContain("<span>스텁 했어</span>");
+  });
+});
+
+// vue 테스트 : https://vue-test-utils.vuejs.org/api/wrapper/#contains
+// vue3 용 테스트 : https://next.vue-test-utils.vuejs.org/guide/advanced/vue-router.html#using-a-mocked-router
+// jest : https://jestjs.io/docs/mock-function-api#mockfnmockresolvedvaluevalue

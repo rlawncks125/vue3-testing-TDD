@@ -12,7 +12,7 @@
     "allowSyntheticDefaultImports": true,
     "sourceMap": true,
     "baseUrl": ".",
-    "types": ["webpack-env", "jest", "cypress"],
+    "types": ["webpack-env", "jest", "cypress", "@testing-library/cypress"],
     "paths": {
       "@/*": ["src/*"]
     },
