@@ -10,7 +10,7 @@ export default class StubClassStub implements MockClassType {
           { item: "stub-zz", available: true },
           { item: "stub-ss", available: false },
         ]);
-      }, 100);
+      }, 2);
     });
   }
 }

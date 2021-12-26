@@ -1,4 +1,9 @@
-import { flushPromises, mount, shallowMount } from "@vue/test-utils";
+import {
+  flushPromises,
+  mount,
+  shallowMount,
+  VueWrapper,
+} from "@vue/test-utils";
 import 데이터접근 from "@/components/데이터_접근.vue";
 import DOM접근 from "@/components/Dom_접근.vue";
 import 클릭시값증가 from "@/components/클릭시값증가.vue";
@@ -16,10 +21,13 @@ import { createRouterMock, injectRouterMock, getRouter } from "vue-router-mock";
 import router, { routes as indexRoutes } from "@/router/index";
 
 // 모듈 목킹
-jest.mock("axios", () => ({
-  get: () => Promise.resolve({ data: "데이터 목킹헀어 안심해" }),
-  post: () => Promise.resolve({ data: "가짜 데이터야 안심해" }),
-}));
+// jest.mock("axios", () => ({
+//   get: () => Promise.resolve({ data: "데이터 목킹헀어 안심해" }),
+//   post: () => Promise.resolve({ data: "가짜 데이터야 안심해" }),
+// }));
+jest.mock("axios");
+(axios.get as jest.Mock).mockResolvedValue({ data: "데이터 목킹헀어 안심해" });
+(axios.post as jest.Mock).mockResolvedValue({ data: "데이터 목킹헀어 " });
 
 describe("exprect", () => {
   it("비교", () => {
@@ -368,6 +376,23 @@ describe("vue 컴포넌트 stubs", () => {
     expect(wrapper.html()).toContain("<compo-a-stub></compo-a-stub>");
     expect(wrapper.html()).toContain("<div>컴포B</div>");
     expect(wrapper.html()).toContain("<span>스텁 했어</span>");
+  });
+});
+
+describe("axios모듈 모킹 문단마다 다르게 값변경 하기", () => {
+  it("문단1", async () => {
+    (axios.get as jest.Mock).mockResolvedValue({ data: "문단1 axios" });
+    const axiosWrapper = shallowMount(axios컴포넌트);
+
+    await flushPromises();
+    expect(axiosWrapper.find(".DomData").text()).toBe("문단1 axios");
+  });
+  it("문단2", async () => {
+    (axios.get as jest.Mock).mockResolvedValue({ data: "문단2 axios" });
+    const axiosWrapper = shallowMount(axios컴포넌트);
+
+    await flushPromises();
+    expect(axiosWrapper.find(".DomData").text()).toBe("문단2 axios");
   });
 });
 
