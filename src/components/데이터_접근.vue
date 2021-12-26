@@ -1,5 +1,8 @@
 <template>
   <div>{{ propsData }}</div>
+
+  <p>{{ dsc }}</p>
+  <input type="text" name="" id="" />
 </template>
 
 <script lang="ts">

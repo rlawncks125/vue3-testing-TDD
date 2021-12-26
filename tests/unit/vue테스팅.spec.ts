@@ -46,12 +46,12 @@ describe("데이터 접근", () => {
     });
 
     // html()
-    expect(warpper.html()).toBe(`<div>${propsData}</div>`);
+    expect(warpper.html()).toContain(`<div>${propsData}</div>`);
     // text()
     expect(warpper.text()).toMatch(propsData);
   });
 
-  it("props & setup() return 값 등 컴포넌트 데이터 접근", () => {
+  it("props & setup() return 값 등 컴포넌트 데이터 접근", async () => {
     const propsData = "testTing";
     const warpper = shallowMount(데이터접근, {
       props: {
@@ -66,6 +66,7 @@ describe("데이터 접근", () => {
     });
 
     // props데이터 접근방법
+    expect(warpper.props("propsData")).toBe(propsData);
     expect(warpper.props().propsData).toBe(propsData);
     expect(warpper.vm.propsData).toBe(propsData);
 
@@ -85,6 +86,37 @@ describe("데이터 접근", () => {
     // mock 데이터 추가 & 접근
     warpper.vm.mockData = "mockData";
     expect(warpper.vm.mockData).toBe("mockData");
+  });
+
+  it("value 변경", async () => {
+    const warpper = shallowMount(데이터접근, {
+      props: {
+        propsData: "propsData",
+      },
+      global: {
+        // 컴포넌트 안에 데이터 mcoking
+        mocks: {
+          SCV: "SCV 출격 준비",
+        },
+      },
+    });
+
+    // setProps props 데이터 변경
+    await warpper.setProps({ propsData: "chageProps" });
+    expect(warpper.props().propsData).toBe("chageProps");
+    // setData  data(){} 값변경 setup() X
+
+    // setValue Element value값 변경
+    const inputEl = warpper.find<HTMLInputElement>("input");
+    inputEl.setValue("addData");
+    expect(inputEl.element.value).toBe("addData");
+
+    // setup() 값 변경
+    warpper.vm.dsc = "changeSetupData";
+
+    await nextTick();
+    expect(warpper.vm.dsc).toBe("changeSetupData");
+    expect(warpper.html()).toContain("changeSetupData");
   });
 });
 
@@ -393,6 +425,23 @@ describe("axios모듈 모킹 문단마다 다르게 값변경 하기", () => {
 
     await flushPromises();
     expect(axiosWrapper.find(".DomData").text()).toBe("문단2 axios");
+  });
+});
+
+describe("하위 컴포넌트 접근", () => {
+  it("하위 컴포넌트 접근", () => {
+    const wrapper = mount(Stub컴포, {
+      global: {
+        stubs: {
+          compoB: true,
+        },
+      },
+    });
+    const compoA = wrapper.getComponent({ name: "compoA" });
+    expect(compoA.html()).toContain("컴포A");
+
+    const compoB = wrapper.getComponent({ name: "compoB" });
+    expect(compoB.html()).toContain("compo-b-stub");
   });
 });
 
