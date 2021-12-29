@@ -8,7 +8,7 @@ module.exports = {
   testPathIgnorePatterns: ["/node_modules/"],
 
   // 커버리지
-  collectCoverage: true,
+  collectCoverage: false,
   // collectCoverageFrom: ["src/**/*.{js,vue}", "!**/node_modules/**"],
   collectCoverageFrom: ["src/components/**/*.{js,vue}", "!**/node_modules/**"],
 

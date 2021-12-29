@@ -14,6 +14,7 @@ import Slots컴포 from "@/components/Slots.vue";
 import Stub컴포 from "@/components/stub컴포넌트.vue";
 import emit컴포 from "@/components/emit접근.vue";
 import 하위emit컴포 from "@/components/하위컴포넌트/하위emit.vue";
+import ErroCompo from "@/components/Error.vue";
 import { createRouterMock, injectRouterMock, getRouter } from "vue-router-mock";
 import router, { routes as indexRoutes } from "@/router/index";
 
@@ -332,6 +333,7 @@ describe("vueRotuer", () => {
 
 import MockClass from "@/../tests/unit/util/MockClass";
 import StubClass from "@/../tests/unit/util/StubClass";
+import { isArray } from "cypress/types/lodash";
 jest.mock("@/../tests/unit/util/MockClass");
 
 describe("mock stub 차이", () => {
@@ -372,6 +374,23 @@ describe("mock stub 차이", () => {
   });
 });
 
+describe("axios모듈 모킹 문단마다 다르게 값변경 하기", () => {
+  it("문단1", async () => {
+    (axios.get as jest.Mock).mockResolvedValue({ data: "문단1 axios" });
+    const axiosWrapper = shallowMount(axios컴포넌트);
+
+    await flushPromises();
+    expect(axiosWrapper.find(".DomData").text()).toBe("문단1 axios");
+  });
+  it("문단2", async () => {
+    (axios.get as jest.Mock).mockResolvedValue({ data: "문단2 axios" });
+    const axiosWrapper = shallowMount(axios컴포넌트);
+
+    await flushPromises();
+    expect(axiosWrapper.find(".DomData").text()).toBe("문단2 axios");
+  });
+});
+
 describe("vue 컴포넌트 stubs", () => {
   it("mount를 이용한 stub안한 컴포넌트 받아오기", () => {
     const wrapper = mount(Stub컴포);
@@ -405,23 +424,6 @@ describe("vue 컴포넌트 stubs", () => {
     expect(wrapper.html()).toContain("<compo-a-stub></compo-a-stub>");
     expect(wrapper.html()).toContain("<div>컴포B</div>");
     expect(wrapper.html()).toContain("<span>스텁 했어</span>");
-  });
-});
-
-describe("axios모듈 모킹 문단마다 다르게 값변경 하기", () => {
-  it("문단1", async () => {
-    (axios.get as jest.Mock).mockResolvedValue({ data: "문단1 axios" });
-    const axiosWrapper = shallowMount(axios컴포넌트);
-
-    await flushPromises();
-    expect(axiosWrapper.find(".DomData").text()).toBe("문단1 axios");
-  });
-  it("문단2", async () => {
-    (axios.get as jest.Mock).mockResolvedValue({ data: "문단2 axios" });
-    const axiosWrapper = shallowMount(axios컴포넌트);
-
-    await flushPromises();
-    expect(axiosWrapper.find(".DomData").text()).toBe("문단2 axios");
   });
 });
 
@@ -460,6 +462,30 @@ describe("emit", () => {
 
     expect(childCompo.emitted().childEvent[0]).toEqual([{ msg: "자식" }]);
     expect(childCompo.emitted().childEvent[1]).toEqual([{ msg: "자식2" }]);
+  });
+});
+
+describe("error 처리 ", () => {
+  it("에러 처리하는법", () => {
+    const warpper = shallowMount(ErroCompo);
+    expect(() => warpper.vm.errCall(true)).toThrow("에러 처리 테스트 입니다.");
+    expect(() => warpper.vm.errCall("_", true)).toThrow("두번째 에러 발생");
+  });
+
+  it("try cath 에러 처리", () => {
+    const warpper = shallowMount(ErroCompo);
+
+    try {
+      warpper.vm.errCall(true);
+    } catch (e: any) {
+      expect(e.message).toBe("에러 처리 테스트 입니다.");
+    }
+
+    try {
+      warpper.vm.errCall("_", true);
+    } catch (e: any) {
+      expect(e.message).toBe("두번째 에러 발생");
+    }
   });
 });
 
