@@ -331,66 +331,6 @@ describe("vueRotuer", () => {
   });
 });
 
-import MockClass from "@/../tests/unit/util/MockClass";
-import StubClass from "@/../tests/unit/util/StubClass";
-import { isArray } from "cypress/types/lodash";
-jest.mock("@/../tests/unit/util/MockClass");
-
-describe("mock stub 차이", () => {
-  beforeEach(() => {
-    // 생성자와 모든 메서드에 대한 모든 인스턴스와 호출을 지움
-    (MockClass as jest.Mock).mockClear();
-  });
-
-  it("mock 은 테스트할 부분적 데이터를 Mock하여 테스트", async () => {
-    const mockData = [
-      { item: "mock--zz", available: true },
-      { item: "mock--ss", available: false },
-    ];
-    // const fetchItems = jest.fn().mockResolvedValue(mockData);
-    // (MockClass as jest.Mock).mockImplementation(() => {
-    //   return {
-    //     fetchItems,
-    //   };
-    // });
-
-    (MockClass as jest.Mock).mockImplementation(() => ({
-      fetchItems: () => Promise.resolve(mockData),
-    }));
-
-    const items = new MockClass();
-
-    expect(await items.fetchItems()).toEqual(mockData);
-  });
-
-  it("stub 은 구조&형식이 같은 데이터 더미를 만들어서 테스트", async () => {
-    const mockData = [
-      { item: "stub-zz", available: true },
-      { item: "stub-ss", available: false },
-    ];
-    const items = new StubClass();
-
-    expect(await items.fetchItems()).toEqual(mockData);
-  });
-});
-
-describe("axios모듈 모킹 문단마다 다르게 값변경 하기", () => {
-  it("문단1", async () => {
-    (axios.get as jest.Mock).mockResolvedValue({ data: "문단1 axios" });
-    const axiosWrapper = shallowMount(axios컴포넌트);
-
-    await flushPromises();
-    expect(axiosWrapper.find(".DomData").text()).toBe("문단1 axios");
-  });
-  it("문단2", async () => {
-    (axios.get as jest.Mock).mockResolvedValue({ data: "문단2 axios" });
-    const axiosWrapper = shallowMount(axios컴포넌트);
-
-    await flushPromises();
-    expect(axiosWrapper.find(".DomData").text()).toBe("문단2 axios");
-  });
-});
-
 describe("vue 컴포넌트 stubs", () => {
   it("mount를 이용한 stub안한 컴포넌트 받아오기", () => {
     const wrapper = mount(Stub컴포);
@@ -465,17 +405,40 @@ describe("emit", () => {
   });
 });
 
+describe("axios모듈 모킹 문단마다 다르게 값변경 하기", () => {
+  it("문단1", async () => {
+    (axios.get as jest.Mock).mockResolvedValue({ data: "문단1 axios" });
+    const axiosWrapper = shallowMount(axios컴포넌트);
+
+    await flushPromises();
+    expect(axiosWrapper.find(".DomData").text()).toBe("문단1 axios");
+  });
+  it("문단2", async () => {
+    (axios.get as jest.Mock).mockResolvedValue({ data: "문단2 axios" });
+    const axiosWrapper = shallowMount(axios컴포넌트);
+
+    await flushPromises();
+    expect(axiosWrapper.find(".DomData").text()).toBe("문단2 axios");
+  });
+});
+
 describe("error 처리 ", () => {
   it("에러 처리하는법", () => {
     const warpper = shallowMount(ErroCompo);
     expect(() => warpper.vm.errCall(true)).toThrow("에러 처리 테스트 입니다.");
-    expect(() => warpper.vm.errCall("_", true)).toThrow("두번째 에러 발생");
+
+    expect(() => {
+      warpper.vm.errCall("_", true);
+    }).toThrow("두번째 에러 발생");
   });
 
   it("try cath 에러 처리", () => {
     const warpper = shallowMount(ErroCompo);
 
     try {
+      const res = warpper.vm.errCall();
+      expect(res).toBeTruthy();
+
       warpper.vm.errCall(true);
     } catch (e: any) {
       expect(e.message).toBe("에러 처리 테스트 입니다.");
@@ -486,6 +449,48 @@ describe("error 처리 ", () => {
     } catch (e: any) {
       expect(e.message).toBe("두번째 에러 발생");
     }
+  });
+});
+
+import MockClass from "@/../tests/unit/util/MockClass";
+import StubClass from "@/../tests/unit/util/StubClass";
+jest.mock("@/../tests/unit/util/MockClass");
+
+describe("mock stub 차이", () => {
+  beforeEach(() => {
+    // 생성자와 모든 메서드에 대한 모든 인스턴스와 호출을 지움
+    (MockClass as jest.Mock).mockClear();
+  });
+
+  it("mock 은 테스트할 부분적 데이터를 Mock하여 테스트", async () => {
+    const mockData = [
+      { item: "mock--zz", available: true },
+      { item: "mock--ss", available: false },
+    ];
+    // const fetchItems = jest.fn().mockResolvedValue(mockData);
+    // (MockClass as jest.Mock).mockImplementation(() => {
+    //   return {
+    //     fetchItems,
+    //   };
+    // });
+
+    (MockClass as jest.Mock).mockImplementation(() => ({
+      fetchItems: () => Promise.resolve(mockData),
+    }));
+
+    const items = new MockClass();
+
+    expect(await items.fetchItems()).toEqual(mockData);
+  });
+
+  it("stub 은 구조&형식이 같은 데이터 더미를 만들어서 테스트", async () => {
+    const mockData = [
+      { item: "stub-zz", available: true },
+      { item: "stub-ss", available: false },
+    ];
+    const items = new StubClass();
+
+    expect(await items.fetchItems()).toEqual(mockData);
   });
 });
 

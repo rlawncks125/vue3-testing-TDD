@@ -12,9 +12,10 @@ export default defineComponent({
         throw new Error("에러 처리 테스트 입니다.");
       }
 
-      if ((twoErr = true)) {
+      if (twoErr === true) {
         throw new Error("두번째 에러 발생");
       }
+      return true;
     };
 
     return { errCall };
