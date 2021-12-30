@@ -1,20 +1,27 @@
-import { render, fireEvent, getByText } from "@testing-library/vue";
-import Compo from "@/components/라이브러리예제.vue";
+import { render, fireEvent } from "@testing-library/vue";
+import Compo from "@/components/테스팅라이브러리/라이브러리예제.vue";
 import vuex컴포넌트 from "@/components/vuex.vue";
-import { key, store, State } from "@/store/index";
-import { Store } from "vuex";
+import Slots컴포 from "@/components/Slots.vue";
+import Stub컴포 from "@/components/stub컴포넌트.vue";
+
+import axios컴포넌트 from "@/components/axios.vue";
+import { key, store } from "@/store/index";
+import { createStore } from "vuex";
+import axios from "axios";
+import { flushPromises } from "@vue/test-utils";
+import { getByText } from "@testing-library/dom";
+
+jest.mock("axios");
+(axios.get as jest.Mock).mockResolvedValue({ data: "데이터 목킹헀어 안심해" });
 
 describe("테스팅 라이브러리 테스트", () => {
   it("render 예제", async () => {
     const { getByText } = render(Compo);
 
-    // getByText returns the first matching node for the provided text, and
-    // throws an error if no elements match or if more than one match is found.
     getByText("Times clicked: 0");
 
     const button = getByText("increment");
 
-    // Dispatch a native click event to our button element.
     await fireEvent.click(button);
     await fireEvent.click(button);
 
@@ -22,58 +29,114 @@ describe("테스팅 라이브러리 테스트", () => {
   });
 });
 
+describe("Slot ", () => {
+  it("", () => {
+    const { getByText } = render(Slots컴포, {
+      slots: {
+        header: "<div>Header</div>",
+        default: "<div>Main Content</div>",
+        footer: "<div>Footer</div>",
+      },
+    });
+    getByText("Header");
+    getByText("Main Content");
+    getByText("Footer");
+  });
+});
+
 describe("vuex", () => {
-  it("사용중인 vuex 활용", () => {
-    const { getByTestId, getByText } = render(vuex컴포넌트, {
+  it("사용중인 vuex 활용", async () => {
+    const { getByTestId, getByText, rerender } = render(vuex컴포넌트, {
       global: {
         plugins: [[store, key]],
       },
     });
 
-    getByTestId("카운트");
+    expect(getByTestId("카운트").textContent).toBe("0");
+
+    await fireEvent.click(getByText("+"));
+    await fireEvent.click(getByText("+"));
+
+    expect(getByTestId("카운트").textContent).toBe("2");
+  });
+
+  it("사용중인 vuex 스택(데이터 쌓임) 확인", () => {
+    const { getByTestId } = render(vuex컴포넌트, {
+      global: {
+        plugins: [[store, key]],
+      },
+    });
+
+    expect(getByTestId("카운트").textContent).toBe("2");
+  });
+
+  it("vuex Stub", async () => {
+    const stubStore = createStore({
+      state: {
+        count: 10,
+      },
+      getters: {
+        myCount: jest.fn(),
+      },
+      mutations: {
+        addCount: (state) => {
+          state.count++;
+        },
+      },
+      actions: {},
+    });
+    const { getByTestId, getByText } = render(vuex컴포넌트, {
+      global: {
+        plugins: [[stubStore, key]],
+      },
+    });
+
+    await fireEvent.click(getByText("+"));
+    expect(getByTestId("카운트").textContent).toBe("11");
   });
 });
 
-// describe("Vuex", () => {
-//     it("사용중인 vuex 활용 ", async () => {
-//       const wrapper = shallowMount(vuex컴포넌트, {
-//         global: {
-//           plugins: [[store, key]],
-//         },
-//       });
+describe("vue 컴포넌트 stubs", () => {
+  it("render로 받아올떄 stub안한 컴포넌트로 받아옴", () => {
+    const { html } = render(Stub컴포);
 
-//       const Store: Store<State> = wrapper.vm.$store;
+    expect(html()).toContain("<div>컴포A</div>");
+    expect(html()).toContain("<div>컴포B</div>");
+    expect(html()).toContain("<div>컴포C</div>");
+  });
 
-//       expect(Store.state.count).toBe(0);
-//       Store.commit("addCount");
-//       await Store.dispatch("asyncData");
+  it("옵션을 이용한 stub 커스텀", () => {
+    const { html } = render(Stub컴포, {
+      global: {
+        stubs: {
+          compoA: true,
+          compoB: false,
+          compoC: {
+            template: `<span>스텁 했어</span>`,
+          },
+        },
+      },
+    });
 
-//       await nextTick(); // 비동기 Dom 반영 대기 import { nextTick } from "vue";
-//       expect(Store.state.count).toBe(1);
-//       expect(Store.state.title).toBe("데이터 목킹헀어 안심해");
-//     });
+    expect(html()).toContain("<compo-a-stub></compo-a-stub>");
+    expect(html()).toContain("<div>컴포B</div>");
+    expect(html()).toContain("<span>스텁 했어</span>");
+  });
+});
 
-//     it("vuex 목킹", async () => {
-//       const wrapper = shallowMount(vuex컴포넌트, {
-//         global: {
-//           plugins: [[store, key]],
-//           mocks: {
-//             $store: {
-//               state: {
-//                 count: 25,
-//                 title: "www",
-//               },
-//               computed: jest.fn(),
-//               commit: jest
-//                 .fn()
-//                 .mockImplementation((name: string) => `${name} mock`),
-//               dispacth: jest.fn(),
-//             },
-//           },
-//         },
-//       });
-//       expect(wrapper.vm.$store.state.count).toBe(25);
-//       expect(wrapper.vm.$store.state.title).toBe("www");
-//       expect(wrapper.vm.$store.commit("add")).toBe("add mock");
-//     });
-//   });
+describe("axios모듈 모킹 문단마다 다르게 값변경 하기", () => {
+  it("문단1", async () => {
+    (axios.get as jest.Mock).mockResolvedValue({ data: "문단1 axios" });
+    const { getByTestId } = render(axios컴포넌트);
+
+    await flushPromises();
+    expect(getByTestId("DomData").textContent).toBe("문단1 axios");
+  });
+  it("문단2", async () => {
+    (axios.get as jest.Mock).mockResolvedValue({ data: "문단2 axios" });
+    const { getByTestId } = render(axios컴포넌트);
+
+    await flushPromises();
+    expect(getByTestId("DomData").textContent).toBe("문단2 axios");
+  });
+});

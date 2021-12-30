@@ -1,5 +1,6 @@
 <template>
   <div class="count" data-testid="카운트">{{ count }}</div>
+  <button @click="addCount">+</button>
   <h2 class="asyncData">{{ title }}</h2>
 </template>
 
@@ -14,7 +15,12 @@ export default defineComponent({
       count: computed(() => store.state.count),
       title: computed(() => store.state.title),
     });
-    return { ...toRefs(data) };
+
+    const addCount = () => {
+      store.commit("addCount");
+    };
+
+    return { ...toRefs(data), addCount };
   },
 });
 </script>

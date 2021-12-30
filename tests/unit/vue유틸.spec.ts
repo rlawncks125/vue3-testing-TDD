@@ -7,7 +7,7 @@ import vuex컴포넌트 from "@/components/vuex.vue";
 import { nextTick } from "vue";
 import axios from "axios";
 import { key, store, State } from "@/store/index";
-import { Store } from "vuex";
+import { createStore, Store } from "vuex";
 import AppCom from "@/App.vue";
 import vue라우터 from "@/components/vue라우터.vue";
 import Slots컴포 from "@/components/Slots.vue";
@@ -256,30 +256,44 @@ describe("Vuex", () => {
     await nextTick(); // 비동기 Dom 반영 대기 import { nextTick } from "vue";
     expect(Store.state.count).toBe(1);
     expect(Store.state.title).toBe("데이터 목킹헀어 안심해");
+
+    await wrapper.find("button").trigger("click");
+    expect(Store.state.count).toBe(2);
   });
 
-  it("vuex 목킹", async () => {
+  it("사용중인 vuex 스택(데이터 쌓임) 확인 ", async () => {
     const wrapper = shallowMount(vuex컴포넌트, {
       global: {
         plugins: [[store, key]],
-        mocks: {
-          $store: {
-            state: {
-              count: 25,
-              title: "www",
-            },
-            computed: jest.fn(),
-            commit: jest
-              .fn()
-              .mockImplementation((name: string) => `${name} mock`),
-            dispacth: jest.fn(),
-          },
+      },
+    });
+
+    expect(wrapper.vm.$store.state.count).toBe(2);
+  });
+
+  it("vuex Stub", async () => {
+    const stubStore = createStore({
+      state: {
+        count: 10,
+        title: "wwa",
+      },
+      mutations: {
+        addCount: (state) => {
+          state.count++;
         },
       },
     });
-    expect(wrapper.vm.$store.state.count).toBe(25);
-    expect(wrapper.vm.$store.state.title).toBe("www");
-    expect(wrapper.vm.$store.commit("add")).toBe("add mock");
+    const wrapper = shallowMount(vuex컴포넌트, {
+      global: {
+        plugins: [[stubStore, key]],
+      },
+    });
+
+    expect(wrapper.vm.$store.state.count).toBe(10);
+    expect(wrapper.vm.$store.state.title).toBe("wwa");
+    await wrapper.find("button").trigger("click");
+    expect(wrapper.vm.$store.state.count).toBe(11);
+    expect(wrapper.find(".count").text()).toBe("11");
   });
 });
 

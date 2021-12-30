@@ -1,5 +1,5 @@
 <template>
-  <p class="DomData">{{ data }}</p>
+  <p class="DomData" data-testid="DomData">{{ data }}</p>
 </template>
 
 <script lang="ts">

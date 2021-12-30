@@ -19,4 +19,5 @@ module.exports = {
     // tell Jest to handle `*.vue` files
     "vue",
   ],
+  // clearMocks: true,
 };
