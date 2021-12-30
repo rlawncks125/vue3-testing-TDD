@@ -1,12 +1,12 @@
 <template>
   <div>{{ propsData }}</div>
 
-  <p>{{ dsc }}</p>
+  <p data-testid="dsc" ref="pRef">{{ dsc }}</p>
   <input type="text" name="" id="" />
 </template>
 
 <script lang="ts">
-import { defineComponent, reactive, toRefs } from "vue";
+import { defineComponent, reactive, ref, toRefs } from "vue";
 
 export default defineComponent({
   props: {

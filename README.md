@@ -46,7 +46,3 @@ npm install --save-dev cypress @testing-library/cypress
 import "@testing-library/cypress/add-commands";
 
 ```
-
-```
-
-```

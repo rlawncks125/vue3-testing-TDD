@@ -56,7 +56,7 @@ describe("데이터 접근", () => {
         propsData,
       },
       global: {
-        // 컴포넌트 안에 데이터 mcoking
+        // 컴포넌트 안에서 데이터 mcoking 할시
         mocks: {
           // state: "dwdw",
         },
@@ -74,6 +74,13 @@ describe("데이터 접근", () => {
       title: "테스트 합시다.",
       dsc: "테스트 주도",
     };
+
+    // data-set 접근 tag?[data-set='value']
+    expect(warpper.find('p[data-testid="dsc"]').text()).toBe(reactive.dsc);
+    expect(warpper.find('[data-testid="dsc"]').text()).toBe(reactive.dsc);
+
+    // ref 접근
+    expect(warpper.find({ ref: "pRef" }).text()).toBe(reactive.dsc);
 
     // vm : Component 읽기 전용
     // setup() 데이터 접근 방법
@@ -142,13 +149,6 @@ describe("DOM 접근", () => {
     await btnInput.trigger("click");
     await btnInput.trigger("click");
     expect(spy).toHaveBeenCalledTimes(3);
-  });
-
-  it("ref 를 이용한 접근", () => {
-    const wrpper = shallowMount(DOM접근);
-    const testRef = wrpper.find({ ref: "testRef" });
-
-    expect(testRef.text()).toBe("ref 접근 방법입니다.");
   });
 });
 
