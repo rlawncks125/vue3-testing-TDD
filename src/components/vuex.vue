@@ -1,5 +1,5 @@
 <template>
-  <div class="count">{{ count }}</div>
+  <div class="count" data-testid="카운트">{{ count }}</div>
   <h2 class="asyncData">{{ title }}</h2>
 </template>
 

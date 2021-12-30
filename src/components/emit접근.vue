@@ -13,7 +13,9 @@ import childCompo from "@/components/하위컴포넌트/하위emit.vue";
 export default defineComponent({
   components: { childCompo },
   setup() {
-    const getEmit = (msg: string) => {};
+    const getEmit = (msg: string) => {
+      msg;
+    };
 
     return { getEmit };
   },
