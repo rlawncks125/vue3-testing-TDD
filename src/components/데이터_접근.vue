@@ -2,7 +2,7 @@
   <div>{{ propsData }}</div>
 
   <p data-testid="dsc" ref="pRef">{{ dsc }}</p>
-  <input type="text" name="" id="" />
+  <input type="text" name="" id="" data-testid="input" />
 </template>
 
 <script lang="ts">

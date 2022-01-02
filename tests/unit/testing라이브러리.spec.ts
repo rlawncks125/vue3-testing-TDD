@@ -1,29 +1,56 @@
-import { render, fireEvent } from "@testing-library/vue";
+import {
+  render,
+  fireEvent,
+  RenderResult,
+  RenderOptions,
+} from "@testing-library/vue";
+import userEvent from "@testing-library/user-event";
 import Compo from "@/components/테스팅라이브러리/라이브러리예제.vue";
 import vuex컴포넌트 from "@/components/vuex.vue";
 import Slots컴포 from "@/components/Slots.vue";
 import Stub컴포 from "@/components/stub컴포넌트.vue";
-
+import 데이터접근 from "@/components/데이터_접근.vue";
 import axios컴포넌트 from "@/components/axios.vue";
 import { key, store } from "@/store/index";
 import { createStore } from "vuex";
 import axios from "axios";
 import { flushPromises } from "@vue/test-utils";
-import { getByText } from "@testing-library/dom";
-
 jest.mock("axios");
 (axios.get as jest.Mock).mockResolvedValue({ data: "데이터 목킹헀어 안심해" });
 
-describe("테스팅 라이브러리 테스트", () => {
-  it("render 예제", async () => {
+describe("데이터 접근", () => {
+  let component: RenderResult;
+  const propsData = "testTing";
+
+  beforeEach(() => {
+    component = render(데이터접근, {
+      props: { propsData },
+    });
+  });
+
+  it("html() ", () => {
+    expect(component.html()).toContain(`<div>${propsData}</div>`);
+  });
+
+  it("el value 값 변경", () => {
+    // userEvent 라이브러리 설치 npm install --save-dev @testing-library/user-event
+    const input = component.getByTestId("input") as HTMLInputElement;
+
+    userEvent.type(input, "value change");
+    expect(input.value).toBe("value change");
+  });
+});
+
+describe("이벤트 트리거 발생", () => {
+  it("클릭 이벤트 발생", async () => {
     const { getByText } = render(Compo);
 
     getByText("Times clicked: 0");
 
     const button = getByText("increment");
 
-    await fireEvent.click(button);
-    await fireEvent.click(button);
+    await fireEvent.click(button); // 내부적 실행처럼
+    await userEvent.click(button); // 유저 행동 실행 처럼
 
     getByText("Times clicked: 2");
   });

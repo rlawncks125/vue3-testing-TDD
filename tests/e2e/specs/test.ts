@@ -17,3 +17,18 @@ describe("테스팅 라이브러리 사용", () => {
     cy.findByPlaceholderText("이메일 입력").type("입력방법");
   });
 });
+
+describe("네트워크 요청 스텁 ( intercept )", () => {
+  beforeEach(() => {
+    cy.visit("/");
+
+    cy.intercept("GET", /(test)/g, {
+      fixture: "test.json",
+    }).as("getTestData");
+  });
+
+  it("about View 에서 테스트", () => {
+    cy.findByText("About").click();
+    cy.findByText("This is an about page cypress test Data").should("exist");
+  });
+});

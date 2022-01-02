@@ -15,6 +15,9 @@ npm install --save-dev @testing-library/vue // x 에러발생
 
 npm install --save-dev @testing-library/vue@next
 
+
+npm install --save-dev @testing-library/user-event //
+
 ```
 
 # vue-utils vs testing-library

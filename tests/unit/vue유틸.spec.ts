@@ -1,4 +1,9 @@
-import { flushPromises, mount, shallowMount } from "@vue/test-utils";
+import {
+  flushPromises,
+  mount,
+  shallowMount,
+  VueWrapper,
+} from "@vue/test-utils";
 import 데이터접근 from "@/components/데이터_접근.vue";
 import DOM접근 from "@/components/Dom_접근.vue";
 import 클릭시값증가 from "@/components/클릭시값증가.vue";
@@ -35,6 +40,12 @@ describe("exprect", () => {
 });
 
 describe("데이터 접근", () => {
+  const state = "state 나쁨";
+  const reactive = {
+    // ...toRefs()
+    title: "테스트 합시다.",
+    dsc: "테스트 주도",
+  };
   it("html() text() 차이", () => {
     const propsData = "testTing";
     const warpper = shallowMount(데이터접근, {
@@ -49,79 +60,104 @@ describe("데이터 접근", () => {
     expect(warpper.text()).toMatch(propsData);
   });
 
-  it("props & setup() return 값 등 컴포넌트 데이터 접근", async () => {
+  describe("컴포넌트 데이터 얻기 ", () => {
+    let warpper: VueWrapper<any>;
     const propsData = "testTing";
-    const warpper = shallowMount(데이터접근, {
-      props: {
-        propsData,
-      },
-      global: {
-        // 컴포넌트 안에서 데이터 mcoking 할시
-        mocks: {
-          // state: "dwdw",
-        },
-      },
+    const mockData = "mockTestTing";
+
+    beforeEach(() => {
+      warpper = shallowMount(데이터접근, {
+        props: { propsData },
+        global: { mocks: { mockData } },
+      });
     });
 
-    // props데이터 접근방법
-    expect(warpper.props("propsData")).toBe(propsData);
-    expect(warpper.props().propsData).toBe(propsData);
-    expect(warpper.vm.propsData).toBe(propsData);
+    it("props데이터 값 얻기", () => {
+      expect(warpper.props("propsData")).toBe(propsData);
+      expect(warpper.props().propsData).toBe(propsData);
+      expect(warpper.vm.propsData).toBe(propsData);
+    });
 
-    const state = "state 나쁨";
-    const reactive = {
-      // ...toRefs()
-      title: "테스트 합시다.",
-      dsc: "테스트 주도",
-    };
+    it("속성 셀렉터로 값 얻기", () => {
+      expect(warpper.find('p[data-testid="dsc"]').text()).toBe(reactive.dsc);
+      expect(warpper.find('[data-testid="dsc"]').text()).toBe(reactive.dsc);
+    });
 
-    // data-set 접근 tag?[data-set='value']
-    expect(warpper.find('p[data-testid="dsc"]').text()).toBe(reactive.dsc);
-    expect(warpper.find('[data-testid="dsc"]').text()).toBe(reactive.dsc);
+    it("ref 값 접근 하여 얻기", () => {
+      expect(warpper.find({ ref: "pRef" }).text()).toBe(reactive.dsc);
+    });
 
-    // ref 접근
-    expect(warpper.find({ ref: "pRef" }).text()).toBe(reactive.dsc);
-
-    // vm : Component 읽기 전용
-    // setup() 데이터 접근 방법
-    expect(warpper.vm.state).toBe(state);
-    expect(warpper.vm.title).toBe(reactive.title);
-    expect(warpper.vm.dsc).toBe(reactive.dsc);
-
-    // mock 데이터 추가 & 접근
-    warpper.vm.mockData = "mockData";
-    expect(warpper.vm.mockData).toBe("mockData");
+    it("vm : Compoent 읽기 전용 ( setup값 , mock값, props값등 컴포넌트값 ) ", () => {
+      // setup값
+      expect(warpper.vm.state).toBe(state);
+      expect(warpper.vm.title).toBe(reactive.title);
+      expect(warpper.vm.dsc).toBe(reactive.dsc);
+      // props값
+      expect(warpper.vm.propsData).toBe(propsData);
+      // mocks 값
+      expect(warpper.vm.mockData).toBe(mockData);
+    });
   });
 
-  it("value 변경", async () => {
-    const warpper = shallowMount(데이터접근, {
-      props: {
-        propsData: "propsData",
-      },
-      global: {
-        // 컴포넌트 안에 데이터 mcoking
-        mocks: {
-          SCV: "SCV 출격 준비",
-        },
-      },
+  describe("값 변경", () => {
+    let warpper: VueWrapper<any>;
+
+    beforeEach(() => {
+      warpper = shallowMount(데이터접근);
     });
 
-    // setProps props 데이터 변경
-    await warpper.setProps({ propsData: "chageProps" });
-    expect(warpper.props().propsData).toBe("chageProps");
-    // setData  data(){} 값변경 setup() X
+    it("setProps() props값 변경", async () => {
+      const propsData = "propsData입니다.";
+      warpper = shallowMount(데이터접근, {
+        props: { propsData },
+      });
 
-    // setValue Element value값 변경
-    const inputEl = warpper.find<HTMLInputElement>("input");
-    inputEl.setValue("addData");
-    expect(inputEl.element.value).toBe("addData");
+      expect(warpper.props().propsData).toBe(propsData);
 
-    // setup() 값 변경
-    warpper.vm.dsc = "changeSetupData";
+      await warpper.setProps({ propsData: "데이터 변경" });
+      expect(warpper.props().propsData).toBe("데이터 변경");
+    });
 
-    await nextTick();
-    expect(warpper.vm.dsc).toBe("changeSetupData");
-    expect(warpper.html()).toContain("changeSetupData");
+    it("setData()", () => {
+      // data() { } 사용시 접근
+      // setup()만 사용해서 나중에 data()사용할시 추가하자
+    });
+
+    it("setValue() Element value값 변경", async () => {
+      const input = warpper.find<HTMLInputElement>("input");
+
+      input.setValue("addData");
+      expect(input.element.value).toBe("addData");
+    });
+
+    it("vm 접근으로 setup()값 변경", async () => {
+      warpper.vm.dsc = "changeSetupData";
+
+      await nextTick();
+      expect(warpper.vm.dsc).toBe("changeSetupData");
+      expect(warpper.html()).toContain("changeSetupData");
+    });
+
+    it("vm 접근으로 mock 데이터 값 변경", () => {
+      warpper = shallowMount(데이터접근, {
+        global: { mocks: { SCV: "출격 준비" } },
+      });
+
+      expect(warpper.vm.SCV).toBe("출격 준비");
+
+      warpper.vm.SCV = "일꾼 맞나?";
+      expect(warpper.vm.SCV).toBe("일꾼 맞나?");
+    });
+  });
+
+  describe("vm 으로 데이터  추가", () => {
+    it("vm 을 이용한 데이터 추가", () => {
+      const warpper = shallowMount(데이터접근);
+      const mockData = "mockTesting";
+      warpper.vm.mockData = mockData;
+
+      expect(warpper.vm.mockData).toBe(mockData);
+    });
   });
 });
 
@@ -468,6 +504,7 @@ describe("error 처리 ", () => {
 
 import MockClass from "@/../tests/unit/util/MockClass";
 import StubClass from "@/../tests/unit/util/StubClass";
+
 jest.mock("@/../tests/unit/util/MockClass");
 
 describe("mock stub 차이", () => {
