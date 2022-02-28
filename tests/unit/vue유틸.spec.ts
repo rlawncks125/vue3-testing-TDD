@@ -219,6 +219,24 @@ describe("함수 Mocking", () => {
 
     expect(mockFn("감")).toBe("내이름:감");
   });
+
+  it("컴포넌트 안에 있는 함수 모킹", () => {
+    const warpper = shallowMount(DOM접근, {
+      global: {
+        mocks: {
+          clickEvent: jest.fn().mockReturnValue("모킹"),
+        },
+      },
+    });
+
+    const spyOn = jest.spyOn(warpper.vm, "clickEvent");
+
+    warpper.find("button").trigger("click");
+
+    expect(spyOn).toHaveBeenCalled();
+
+    expect(warpper.vm.clickEvent()).toBe("모킹");
+  });
 });
 
 describe("spy 동작 감시", () => {
