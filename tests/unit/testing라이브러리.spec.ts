@@ -11,12 +11,37 @@ import Slots컴포 from "@/components/Slots.vue";
 import Stub컴포 from "@/components/stub컴포넌트.vue";
 import 데이터접근 from "@/components/데이터_접근.vue";
 import axios컴포넌트 from "@/components/axios.vue";
+import comsole컴포넌트 from "@/components/consoleLog.vue";
 import { key, store } from "@/store/index";
 import { createStore } from "vuex";
 import axios from "axios";
 import { flushPromises } from "@vue/test-utils";
+
 jest.mock("axios");
 (axios.get as jest.Mock).mockResolvedValue({ data: "데이터 목킹헀어 안심해" });
+
+describe("widnow 함수 모킹", () => {
+  let log: string[] = [];
+  console.log = jest.fn((msg) => log.push(msg));
+
+  it("console.log", () => {
+    console.log("test log");
+
+    const logs = ["test log"].join("\n");
+
+    expect(log.join("\n")).toBe(logs);
+  });
+
+  it("component console.log", () => {
+    log = [];
+
+    const component = render(comsole컴포넌트);
+
+    const logs = ["console log testing", "onMounted"].join("\n");
+
+    expect(log.join("\n")).toBe(logs);
+  });
+});
 
 describe("데이터 접근", () => {
   let component: RenderResult;
